@@ -38,20 +38,48 @@ async function run() {
 
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const service = await serviceCollection.findOne(query);
             res.send(service);
         });
 
 
         // orders api
+        app.get('/orders', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
+
         app.post('/orders', async (req, res) => {
-            const order = req.body; 
+            const order = req.body;
             console.log(order);
             const result = await orderCollection.insertOne(order);
             res.send(result);
         });
-    } finally {}
+
+
+        //delete
+        app.delete('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
+
+    } finally { }
 }
 run().catch(console.dir);
 

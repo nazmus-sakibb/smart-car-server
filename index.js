@@ -46,7 +46,7 @@ async function run() {
 
         // orders api
         app.get('/orders', async (req, res) => {
-            console.log(req.query.email);
+            // console.log(req.query.email);
             let query = {};
             if (req.query?.email) {
                 query = {
@@ -67,7 +67,22 @@ async function run() {
         });
 
 
-        //delete
+        // update
+        app.patch('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const status = req.body.status;
+            const query = {_id: new ObjectId(id)};
+            const updatedDoc = {
+                $set: {
+                    status: status
+                }
+            };
+            const result = await orderCollection.updateOne(query, updatedDoc);
+            res.send(result);
+        })
+
+
+        // delete
         app.delete('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const query = {_id: new ObjectId(id)};

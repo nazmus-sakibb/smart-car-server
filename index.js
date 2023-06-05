@@ -26,21 +26,22 @@ const client = new MongoClient(uri, {
 });
 
 
+
+// jwt verify
 function verifyJWT(req, res, next){
     const authHeader = req.headers.authorization;
     if(!authHeader){
-        res.status(401).send({message: "Unauthorized access!"});
+        return res.status(401).send({message: 'Unauthorize access!'});
     }
 
     const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded){
         if(err){
-            res.status(401).send({message: "Unauthorized access!"});
+            return res.status(403).send({message: 'Unauthorize access!'});
         }
-
         req.decoded = decoded;
         next();
-    });
+    })
 }
 
 
@@ -52,7 +53,7 @@ async function run() {
         // JWT Token
         app.post('/jwt', async (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '2 days'});
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '5'});
             res.send({token});
         })
 
@@ -76,6 +77,12 @@ async function run() {
         // orders api
         app.get('/orders', verifyJWT, async (req, res) => {
             // console.log(req.query.email);
+            const decoded = req.decoded;
+            console.log('inside orders api', decoded);
+            if(decoded.email !== req.query.email){
+                return res.status(403).send({message: 'Unauthorize access!'});
+            }
+
             let query = {};
             if (req.query?.email) {
                 query = {
